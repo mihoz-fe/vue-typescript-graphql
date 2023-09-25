@@ -36,7 +36,7 @@ const handleSubmit = () => {
 </script>
 
 <template>
-  <main>
+  <div>
     <h1>Create User</h1>
 
     <form @submit.prevent="handleSubmit">
@@ -56,5 +56,5 @@ const handleSubmit = () => {
         <button>submit</button>
       </div>
     </form>
-  </main>
+  </div>
 </template>

@@ -12,13 +12,18 @@ import HelloWorld from './components/HelloWorld.vue'
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink :to="{name: 'aboutUser'}">Get User</RouterLink>
-        <RouterLink :to="{name: 'createUser'}">Create Ueser</RouterLink>
+        <RouterLink :to="{ name: 'users' }">Users</RouterLink>
+        <RouterLink :to="{ name: 'createUser' }">Create Ueser</RouterLink>
       </nav>
     </div>
   </header>
-
-  <RouterView />
+  <main>
+    <RouterView v-slot="{ Component }">
+      <Transition mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </RouterView>
+  </main>
 </template>
 
 <style scoped>
