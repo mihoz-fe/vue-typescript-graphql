@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import UserPosts from '@/components/UserPosts.vue'
+import Loader from '@/components/LoaderComponent.vue'
 
-const userId = ref<string>('')
-const { result } = useQuery(
+const route = useRoute()
+
+console.log(route)
+
+const { result, loading, error } = useQuery(
   gql`
     query user($id: ID!) {
       user(id: $id) {
@@ -22,8 +26,9 @@ const { result } = useQuery(
     }
   `,
   () => ({
-    id: 1
-  })
+    id: route.params.id
+  }),
+  {errorPolicy: 'all'}
 )
 
 </script>
@@ -31,7 +36,15 @@ const { result } = useQuery(
 <template>
   <div>
     <h1>User page</h1>
-    <UserPosts user="result?.user" />
+    <UserPosts :user="result?.user" />
+    <Loader v-if="loading" />
+    <Transition>
+      <div class="errored" v-if="error">
+        <h2 style="{text-align: cenyer;}">
+          {{ error?.message }}
+        </h2>
+      </div>
+    </Transition>
   </div>
 </template>
 

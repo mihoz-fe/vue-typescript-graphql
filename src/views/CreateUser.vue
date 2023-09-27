@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 
 const userName = ref<string>('')
 const name = ref<string>('')
 const email = ref<string>('')
+let newuser = ref<{ username: string; id: string }>({ username: '', id: '' })
+let currentError = ref<string>('')
 
-const { mutate: createUser } = useMutation(gql`
+const { mutate: createUser, onDone, onError, error } = useMutation(gql`
   mutation createUser($input: CreateUserInput!) {
     createUser(input: $input) {
       username
@@ -17,21 +19,30 @@ const { mutate: createUser } = useMutation(gql`
 `)
 
 const handleSubmit = () => {
-  createUser({
-    input: {
-      name: name.value,
-      username: userName.value,
-      email: email.value
-    }
-  })
-  .then(
-    ()=>{
-      console.log('then worked')
-      name.value = ''
-      userName.value = ''
-      email.value = ''
-    }
-  )
+  if (userName.value && name.value && email.value)
+   try  {createUser({
+      input: {
+        name: name.value,
+        username: userName.value,
+        email: email.value
+      }
+    })
+    onDone((response)=>{
+      userName.value=''
+      name.value=''
+      email.value=''
+      newuser.value = response.data.createUser
+      console.log('response', response)
+    })
+    onError((error)=>{
+      currentError.value = error.message
+      setTimeout(()=>{currentError.value = ''},5000)
+    })
+
+  }
+  catch(error: any) {
+    console.error(error)
+  }
 }
 </script>
 
@@ -56,5 +67,30 @@ const handleSubmit = () => {
         <button>submit</button>
       </div>
     </form>
+
+    <Transition>
+      <div class="result-block" v-if="newuser.id">
+        <span>User &nbsp;</span><strong>{{ newuser?.username }}</strong
+        ><span>&nbsp;successful created with id {{ newuser?.id }}</span>
+      </div>
+    </Transition>
+    <Transition>
+      <div class="errored" v-if="currentError">
+        {{ currentError }}
+      </div>
+    </Transition>
   </div>
 </template>
+
+<style>
+strong {
+  font-weight: bold;
+}
+.result-block {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+}
+.errored {
+  color: rgb(122, 12, 12);
+}
+</style>
